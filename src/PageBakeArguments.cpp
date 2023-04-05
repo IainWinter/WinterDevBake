@@ -25,7 +25,7 @@ bool PageBakeArguments::Valid() const
 void PrintHelp()
 {
 	std::cout 
-		<< "usage: -s <source> [-a <article>] [-c <comment_name>] [-d <destination>] [-t]" << std::endl
+		<< "usage: -s <source> [-a <article>] [-c <comment_name>] (-d <destination> | -t)" << std::endl
 		<< std::endl
 		<< "Options:" << std::endl
 		<<		"\t-s -> source file path of page template" << std::endl
