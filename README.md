@@ -1,7 +1,7 @@
 # WinterDevBake
 
 Main purpose of this is for the custom syntax highlighting that I like to do. No web based C++ syntax highlighter can color classes, so this solves that by
-allowing custom tags to be used. Simple symbols are handles in a preprocessor.
+allowing custom tags to be used. Simple symbols are handled in a preprocessor.
   
 
 ```
