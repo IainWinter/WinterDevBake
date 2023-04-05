@@ -5,7 +5,7 @@ allowing custom tags to be used. Simple symbols are handled in a preprocessor.
   
 
 ```
-usage: -s <source> [-a <article>] [-c <comment_name>] [-d <destination>] [-t]
+usage: -s <source> [-a <article>] [-c <comment_name>] (-d <destination>] | -t)
 
 Options:
         -s -> source file path of page template
