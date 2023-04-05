@@ -29,7 +29,7 @@ void PrintHelp()
 		<< std::endl
 		<< "Options:" << std::endl
 		<<		"\t-s -> source file path of page template" << std::endl
-		<<		"\t-s -> source file path of article template" << std::endl
+		<<		"\t-a -> source file path of article template" << std::endl
 		<<		"\t-c -> name to use for comment lookup" << std::endl
 		<<		"\t-d -> destination file path" << std::endl
 		<<		"\t-t -> print to console" << std::endl
