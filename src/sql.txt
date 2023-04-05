@@ -1,0 +1,29 @@
+CREATE user wbake IDENTIFIED BY "WBakeInternal&^%>524";
+GRANT SELECT, INSERT, UPDATE, DELETE ON blog.comments TO "wbake";
+GRANT SELECT, INSERT, UPDATE, DELETE ON blog.subjects TO "wbake";
+
+CREATE DATABASE blog;
+
+CREATE TABLE subjects (
+	id INT NOT NULL AUTO_INCREMENT,
+	subject VARCHAR(256) NOT NULL,
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE comments (
+	id INT NOT NULL AUTO_INCREMENT,
+	parent_id INT NOT NULL,
+	subject_id INT NOT NULL,
+
+	name VARCHAR(64) NOT NULL,
+	text VARCHAR(1024) NOT NULL,
+
+	date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	ip VARCHAR(128) NOT NULL,
+	
+
+	PRIMARY KEY (id)
+);
+
+INSERT INTO subjects (subject) VALUES ("Falling Sand Worlds");
+INSERT INTO comments (parent_id, subject_id, name, text, ip) VALUES(0, 1, "Iain", "Hello this is a test comment", "192.168.1.1");
