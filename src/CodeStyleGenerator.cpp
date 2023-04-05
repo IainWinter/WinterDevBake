@@ -41,9 +41,9 @@ std::string InsertAutoStyleTags(const std::string codeTemplate)
 	std::stringstream out;
 	bool inComment = false;
 
-	for (size_t i = 1; i < codeTemplate.length(); i++)
+	for (size_t i = 0; i < codeTemplate.length(); i++)
 	{
-		char c = codeTemplate.at(i - 1);
+		char c = codeTemplate.at(i);
 
 		// check for special comment case
 
@@ -53,9 +53,9 @@ std::string InsertAutoStyleTags(const std::string codeTemplate)
 				inComment = false;
 		}
 
-		else // if not in a comment, check if it should enter state
+		else if (i + 1 < codeTemplate.length()) // if not in a comment, check if it should enter state
 		{
-			char c1 = codeTemplate.at(i);
+			char c1 = codeTemplate.at(i + 1);
 
 			if (c == '/' && c1 == '/')
 			{
@@ -67,7 +67,7 @@ std::string InsertAutoStyleTags(const std::string codeTemplate)
 		if (inComment) // don't apply style if in comment
 			continue;
 
-		std::string match = MatchString(gCodeAutoStyles, codeTemplate, i - 1);
+		std::string match = MatchString(gCodeAutoStyles, codeTemplate, i);
 
 		if (match.length() > 0)
 		{
@@ -129,4 +129,9 @@ void GenerateCodeStyle(std::ostream& out, const std::string& codeTemplateIn)
 			i += match.length();
 		}
 	}
+
+	// write final output
+
+	if (accHasContent)
+		out << acc.rdbuf() << "</span>";
 }

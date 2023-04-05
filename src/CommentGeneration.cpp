@@ -63,7 +63,7 @@ void GenerateComment(std::ostream& out, const Comment& comment)
 			"<span class='comment-reply fake-href' data-comment-id='" << comment.id << "'>Reply</span>"
 			"<span class='comment-time'>" << comment.date << "</span>"
 		"</div>"
-	"</div>";
+	"</div>" << std::endl;
 }
 
 int GenerateComments(std::ostream& out, const std::string& subject)
