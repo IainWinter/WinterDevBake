@@ -11,6 +11,7 @@ struct Comment
     int id = 0;
     int pid = 0;
     std::string name;
+    std::string pname;
     std::string text;
     uint64_t date;
 };
@@ -28,7 +29,18 @@ int GetCommentsForSubject(const std::string& subject, std::vector<Comment>* comm
 
         con->setSchema("blog");
 
-        sql::PreparedStatement* query = con->prepareStatement("SELECT comments.id, parent_id, name, text, UNIX_TIMESTAMP(date) FROM comments INNER JOIN subjects ON comments.subject_id = subjects.id WHERE subject = ?");
+        sql::PreparedStatement* query = con->prepareStatement(
+            "SELECT"
+                " comments.id,"
+                " comments.parent_id,"
+                " comments.name,"
+                " IF(parents.name IS NULL, '', parents.name),"
+                " comments.text,"
+                " UNIX_TIMESTAMP(comments.date)"
+            " FROM comments"
+            " LEFT JOIN comments AS parents ON (parents.id = comments.parent_id)"
+            " INNER JOIN subjects ON comments.subject_id = subjects.id WHERE subject = ?;"
+        );
         query->setString(1, subject.c_str());
 
         sql::ResultSet* result = query->executeQuery();
@@ -39,8 +51,9 @@ int GetCommentsForSubject(const std::string& subject, std::vector<Comment>* comm
             comment.id = result->getInt(1);
             comment.pid = result->getInt(2);
             comment.name = result->getString(3);
-            comment.text = result->getString(4);
-            comment.date = result->getInt64(5);
+            comment.pname = result->getString(4);
+            comment.text = result->getString(5);
+            comment.date = result->getInt64(6);
            
             comments->push_back(comment);
         }
@@ -57,40 +70,44 @@ int GetCommentsForSubject(const std::string& subject, std::vector<Comment>* comm
 
 void GenerateComment(std::ostream& out, const Comment& comment)
 {
-	out << "<div class='comment' id='comment-" << comment.id << "'>"
-		"<h3 class='comment-name mark-section'>" << comment.name << "</h3>"
-		"<p class='comment-text'>" << comment.text << "</p>"
-		"<div class='comment-meta'>"
-			"<span class='comment-reply fake-href' data-comment-id='" << comment.id << "'>Reply</span>"
-			"<span class='comment-time'>" << comment.date << "</span>"
-		"</div>"
-	"</div>" << std::endl;
+    std::time_t time = (std::time_t)comment.date;
+    std::tm utc_tm;
+    gmtime_s(&utc_tm, &time);
+
+    char buf[80];
+    std::strftime(buf, sizeof(buf), "%B %d, %Y", &utc_tm);
+
+    out << 
+        "<div class='comment' id='comment-" << comment.id << "'>"
+            "<h3 class='comment-name mark-section'>" 
+                "<span class='comment-name-text'>" << comment.name << "</span>"
+                "<span class='comment-name-reply'>" << (comment.pname.length() > 0 ? ", in reply to " + comment.pname : "") << "</span>"
+            "</h3>"
+        "<p class='comment-text'>" << comment.text << "</p>"
+        "<div class='comment-meta'>"
+            "<span class='comment-reply fake-href' data-comment-id='" << comment.id << "' data-comment-name='" << comment.name << "'>Reply</span>"
+            "<span class='comment-time'>" << buf << "</span>"
+        "</div>"
+    "</div>" << std::endl;
 }
-
-//void GenerateCommentChainInner(std::ostream& out, int pid, std::unordered_map<int, std::vector<const Comment*>> commentsByPID)
-//{
-//}
-
 
 void GenerateCommentChain(std::ostream& out, const Comment* comment, std::unordered_map<int, std::vector<const Comment*>> commentsByPID)
 {
-    out << "<div class='comment-chain' id='comment-chain-" << comment->id << "'>" << std::endl;
+    out << "<div class='comment-chain draw-left-line' id='comment-chain-" << comment->id << "'>" << std::endl;
 
-    std::stack<const Comment*> q;
-    q.push(comment);
+    std::stack<const Comment*> dfs;
+    dfs.push(comment);
 
-    while (!q.empty())
+    while (!dfs.empty())
     {
-        const Comment* c = q.top();
-        q.pop();
+        const Comment* c = dfs.top();
+        dfs.pop();
 
-        //printf("%d\n", c->id);
-
-        GenerateComment(out, *c); // root comment
+        GenerateComment(out, *c);
 
         if (commentsByPID.count(c->id))
             for (const Comment* child : commentsByPID.at(c->id))
-                q.push(child);
+                dfs.push(child);
     }
 
     out << "</div>" << std::endl;
@@ -109,7 +126,6 @@ void GenerateCommentSection(std::ostream& out, std::unordered_map<int, std::vect
             GenerateComment(out, *comment);
     }
 }
-
 
 int GenerateComments(std::ostream& out, const std::string& subject)
 {

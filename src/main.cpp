@@ -1,5 +1,4 @@
 #include "PageGenerator.h"
-#include "ArticleGenerator.h"
 #include "Util.h"
 
 #include <iostream>
